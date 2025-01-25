@@ -1,23 +1,26 @@
 ﻿namespace Bank.Components.Models
 {
-    class CurrentAccount : Account
+    /// <summary>
+    /// Represents a current bank account with a credit line.
+    /// </summary>
+    class CurrentAccount : BankAccount
     {
-        public CurrentAccount(string number, double balance, double creditLine, Person owner) : base(number, balance, creditLine, owner) { }
-        public CurrentAccount(string number, double balance, Person owner) : base(number, balance, 0, owner) { }
-        public CurrentAccount(string number, Person owner) : base(number, 0, 100, owner) { }
+        /// <summary>
+        /// Initializes a new instance of the CurrentAccount class with the specified account number, owner, balance, and credit line.
+        /// </summary>
+        public CurrentAccount(string number, Person owner, double balance = 0, double creditLine = 0, double positiveInterest = 0.03, double negativeInterest = 0.0975) : base(number, owner, balance, creditLine)
+        {
+            PositiveInterest = positiveInterest;
+            NegativeInterest = negativeInterest;
+        }
+        /// <summary>
+        /// Withdraws the specified amount from the account, ensuring no overdraft beyond the credit line.
+        /// </summary>
+        /// <param name="amount">The amount to withdraw.</param>
         public override void Withdraw(double amount)
         {
-            if (Balance > 0 && Balance - amount < 0)
-            {
-                OnNegativeBalance();
-            }
+            CheckNegativeBalance();
             base.Withdraw(amount);
         }
-        public override double CalculInterests()
-        {
-            Console.WriteLine("Calcul des interets...");
-            return Balance >= 0 ? Balance * 0.03 : Balance * 0.0975;
-        }
-
     }
 }

@@ -20,23 +20,24 @@
         try
         {
             // Initialise le compte
-            Account = new CurrentAccount("BE68 5390 0754 7034", 157.25, 1000, Arnaud);
+            Account = new CurrentAccount("BE68 5390 0754 7034", Arnaud, 157.25, 1000);
             Account.NegativeBalanceEvent += HandleNegativeBalance;
 
             // Simule les opérations
-            Log($"Initial balance: {Account.Balance:F2}€");
+            Log($"Initial balance: {Account.Balance}€");
             Account.Withdraw(3.65);
-            Log($"Withdrew 3.65€. Balance: {Account.Balance:F2}€");
+            Log($"Withdrew 3.65€. Balance: {Account.Balance}€");
             Account.Withdraw(251.32);
-            Log($"Withdrew 251.32€. Balance: {Account.Balance:F2}€");
+            Log($"Withdrew 251.32€. Balance: {Account.Balance}€");
             Account.ApplyInterests();
-            Log($"Applied interests. Balance: {Account.Balance:F2}€");
-            // Account.Deposit(-1.78); Échec attendu
-            // Log($"Tried to deposit -1.78€. Balance: {Account.Balance:F2}€");
+            Log($"Applied interests. Balance: {Account.Balance}€");
+            // Account.Withdraw(8457); Échec attendu
+            Account.Withdraw(56.56);
+            Log($"Withdrew 56.56€. Balance: {Account.Balance}€");
             Account.Deposit(3254.56);
-            Log($"Deposited 3254.56€. Balance: {Account.Balance:F2}€");
+            Log($"Deposited 3254.56€. Balance: {Account.Balance}€");
             Account.ApplyInterests();
-            Log($"Applied interests. Balance: {Account.Balance:F2}€");
+            Log($"Applied interests. Balance: {Account.Balance}€");
         }
         catch (Exception e)
         {
