@@ -1,7 +1,60 @@
 ﻿@page "/"
+@using Bank.Components.Models
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container">
+    @foreach (var log in Logs)
+    {
+        <p>@log</p>
+    }
+</div>
 
-Welcome to your new app.
+@code {
+    private Person Arnaud = new("Arnaud", "Clarat", new DateTime(1997, 7, 14));
+    private CurrentAccount Account;
+    private List<string> Logs = new();
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            // Initialise le compte
+            Account = new CurrentAccount("BE68 5390 0754 7034", 157.25, 1000, Arnaud);
+            Account.NegativeBalanceEvent += HandleNegativeBalance;
+
+            // Simule les opérations
+            Log($"Initial balance: {Account.Balance:F2}€");
+            Account.Withdraw(3.65);
+            Log($"Withdrew 3.65€. Balance: {Account.Balance:F2}€");
+            Account.Withdraw(251.32);
+            Log($"Withdrew 251.32€. Balance: {Account.Balance:F2}€");
+            Account.ApplyInterests();
+            Log($"Applied interests. Balance: {Account.Balance:F2}€");
+            // Account.Deposit(-1.78); Échec attendu
+            // Log($"Tried to deposit -1.78€. Balance: {Account.Balance:F2}€");
+            Account.Deposit(3254.56);
+            Log($"Deposited 3254.56€. Balance: {Account.Balance:F2}€");
+            Account.ApplyInterests();
+            Log($"Applied interests. Balance: {Account.Balance:F2}€");
+        }
+        catch (Exception e)
+        {
+            Log(e.Message);
+        }
+    }
+
+    private void HandleNegativeBalance(object sender)
+    {
+        var account = sender as CurrentAccount;
+        if (account != null)
+        {
+            Logs.Add($"[ALERT] Negative balance for account {account.Number}.");
+        }
+    }
+
+    private void Log(string message)
+    {
+        Logs.Add(message);
+    }
+}
