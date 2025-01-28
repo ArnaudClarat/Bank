@@ -3,8 +3,10 @@ using Bank.Components;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+string filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "bankState.json");
+builder.Services.AddSingleton(new BankStateService(filePath));
 
 var app = builder.Build();
 

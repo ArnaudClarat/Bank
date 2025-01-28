@@ -1,7 +1,19 @@
 ﻿@page "/"
 @using Bank.Components.Models
+@inject BankStateService BankStateService
 
 <PageTitle>Home</PageTitle>
+
+<h3>Customers List</h3>
+<ul>
+    @if (Customers != null)
+    {
+        @foreach (var customer in Customers)
+        {
+            <li>@customer.FirstName @customer.LastName</li>
+        }
+    }
+</ul>
 
 <div class="container">
     @foreach (var log in Logs)
@@ -10,17 +22,21 @@
     }
 </div>
 
+<a href="/create-customer" class="btn btn-primary">Create New Customer</a>
+
 @code {
-    private Person Arnaud = new("Arnaud", "Clarat", new DateTime(1997, 7, 14));
     private CurrentAccount Account;
+    private List<Person> Customers;
     private List<string> Logs = new();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         try
         {
+            var state = await BankStateService.LoadStateAsync();
+            Customers = state.Customers;
             // Initialise le compte
-            Account = new CurrentAccount("BE68 5390 0754 7034", Arnaud, 157.25, 1000);
+            Account = new CurrentAccount("BE68 5390 0754 7034", Customers[0], 157.25, 1000);
             Account.NegativeBalanceEvent += HandleNegativeBalance;
 
             // Simule les opérations

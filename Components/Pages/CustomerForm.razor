@@ -1,0 +1,49 @@
+﻿@page "/create-customer"
+@using Bank.Components.Models
+@inject BankStateService BankStateService
+
+<h3>Create a new customer</h3>
+
+<EditForm Model="@newCustomer" OnValidSubmit="HandleCustomerCreation" FormName="newCustomerForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="firstName">First Name:
+            <InputText id="firstName" class="form-control" @bind-Value="newCustomer!.FirstName" />
+            <ValidationMessage For="@(()=>newCustomer.FirstName)" />
+        </label>
+    </div>
+    <div class="form-group">
+        <label for="lastName">Last Name:
+            <InputText id="lastName" class="form-control" @bind-Value="newCustomer!.LastName" />
+            <ValidationMessage For="@(()=>newCustomer.LastName)" />
+        </label>
+    </div>
+    <div class="form-group">
+        <label for="birthDate">Birth Date:
+            <InputDate id="birthDate" class="form-control" @bind-Value="newCustomer!.BirthDate" />
+            <ValidationMessage For="@(()=>newCustomer.BirthDate)" />
+        </label>
+    </div>  
+    <button style="margin-top: 10px;" type="submit" class="btn btn-primary">Create Customer</button>
+</EditForm>
+
+<a href="/" style="margin-top: 10px;" class="btn btn-secondary">Back to List</a>
+
+@code {
+    [SupplyParameterFromForm]
+    private Person? newCustomer { get; set; }
+    public List<Person> Customers { get; set; }
+
+    protected override void OnInitialized() => newCustomer ??= new(string.Empty, string.Empty, DateTime.Now);
+
+    private async Task HandleCustomerCreation()
+    {
+        var state = await BankStateService.LoadStateAsync();
+        state.Customers.Add(newCustomer);
+        await BankStateService.SaveStateAsync(state);
+
+        newCustomer = new Person(string.Empty, string.Empty, DateTime.Now); // Réinitialiser le formulaire
+    }
+}
