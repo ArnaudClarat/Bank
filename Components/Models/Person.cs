@@ -12,5 +12,6 @@ namespace Bank.Components.Models
         [Required(ErrorMessage = "Birth Date is required.")]
         [DynamicDateRange(MinAge = 18, MaxAge = 180, ErrorMessage = "Birth Date must be between 18 and 180.")]
         public DateTime BirthDate { get; set; } = birthDate;
+        public string FullName => $"{FirstName} {LastName}";
     }
 }

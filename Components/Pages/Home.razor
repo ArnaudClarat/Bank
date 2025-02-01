@@ -10,24 +10,27 @@
     {
         @foreach (var customer in Customers)
         {
-            <li>@customer.FirstName @customer.LastName</li>
+            <li>@customer.FullName</li>
         }
     }
 </ul>
-
-<div class="container">
-    @foreach (var log in Logs)
-    {
-        <p>@log</p>
-    }
-</div>
-
 <a href="/create-customer" class="btn btn-primary">Create New Customer</a>
 
+<h3 style="margin-top: 10px">Accounts List</h3>
+<ul>
+    @if (Accounts != null)
+    {
+        @foreach (var account in Accounts)
+        {
+            <li>@account.Number, @account.Balance, @account.Owner.FirstName @account.Owner.LastName</li>
+        }
+    }
+</ul>
+<a href="/create-account" class="btn btn-primary">Create New Account</a>
+
 @code {
-    private CurrentAccount Account;
     private List<Person> Customers;
-    private List<string> Logs = new();
+    private List<BankAccount> Accounts;
 
     protected override async Task OnInitializedAsync()
     {
@@ -35,43 +38,11 @@
         {
             var state = await BankStateService.LoadStateAsync();
             Customers = state.Customers;
-            // Initialise le compte
-            Account = new CurrentAccount("BE68 5390 0754 7034", Customers[0], 157.25, 1000);
-            Account.NegativeBalanceEvent += HandleNegativeBalance;
-
-            // Simule les opérations
-            Log($"Initial balance: {Account.Balance}€");
-            Account.Withdraw(3.65);
-            Log($"Withdrew 3.65€. Balance: {Account.Balance}€");
-            Account.Withdraw(251.32);
-            Log($"Withdrew 251.32€. Balance: {Account.Balance}€");
-            Account.ApplyInterests();
-            Log($"Applied interests. Balance: {Account.Balance}€");
-            // Account.Withdraw(8457); Échec attendu
-            Account.Withdraw(56.56);
-            Log($"Withdrew 56.56€. Balance: {Account.Balance}€");
-            Account.Deposit(3254.56);
-            Log($"Deposited 3254.56€. Balance: {Account.Balance}€");
-            Account.ApplyInterests();
-            Log($"Applied interests. Balance: {Account.Balance}€");
+            Accounts = state.Accounts;
         }
         catch (Exception e)
         {
-            Log(e.Message);
+            Console.WriteLine(e.Message);
         }
-    }
-
-    private void HandleNegativeBalance(object sender)
-    {
-        var account = sender as CurrentAccount;
-        if (account != null)
-        {
-            Logs.Add($"[ALERT] Negative balance for account {account.Number}.");
-        }
-    }
-
-    private void Log(string message)
-    {
-        Logs.Add(message);
     }
 }

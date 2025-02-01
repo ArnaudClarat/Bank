@@ -1,17 +1,20 @@
-﻿namespace Bank.Components.Models
+﻿using System.Numerics;
+using System.Security.Cryptography;
+
+namespace Bank.Components.Models
 {
     /// <summary>
     /// Initializes a new instance of the Account class with a specified account number, balance, credit line, and owner.
     /// </summary>
-    abstract class BankAccount : IBankAccount
+    public abstract class BankAccount : IBankAccount
     {
-        public string Number { get; private set; }
-        public double Balance { get; private set; }
-        public double CreditLine { get; private set; }
+        public string Number { get; set; }
+        public double Balance { get; set; }
+        public double CreditLine { get; set; }
         public double PositiveInterest { get; protected set; }
         public double NegativeInterest { get; protected set; }
         public DateTime DateLastWithdraw { get; private set; }
-        public Person Owner { get; private set; }
+        public Person Owner { get; set; }
         public event Action<BankAccount>? NegativeBalanceEvent;
         /// <summary>
         /// Initializes a new instance of the BankAccount class with a specified account number, balance, credit line, and owner.
@@ -87,6 +90,38 @@
                 Console.WriteLine("Warning, your balance is negative.");
                 NegativeBalanceEvent?.Invoke(this);
             }
+        }
+
+        public static bool IsValidBankAccount(string iban)
+        {
+            if (string.IsNullOrWhiteSpace(iban)) return false;
+
+            iban = iban.Replace(" ", "").Trim().ToUpper();
+
+            if (!iban.StartsWith("BE") || iban.Length != 16 || !iban.Skip(2).All(char.IsDigit))
+                return false;
+
+            string checksum = iban.Substring(2, 2);
+            string accountNumber = iban.Substring(4, 12);
+
+            string numericIBAN = accountNumber + "1114" + checksum; // "B"=11, "E"=14
+            BigInteger ibanNumber = BigInteger.Parse(numericIBAN);
+
+            return ibanNumber % 97 == 1;
+        }
+        public static string GenerateValidBelgianIBAN()
+        {
+            byte[] buffer = new byte[5];
+            RandomNumberGenerator.Fill(buffer); 
+
+            long baseNumber = BitConverter.ToUInt32(buffer, 0) % 10000000000L;
+
+            string numericIBAN = baseNumber.ToString("D10") + "1114"; // "BE" = 1114
+            BigInteger ibanNumber = BigInteger.Parse(numericIBAN);
+
+            int controlKey = (int)(98 - (ibanNumber % 97));
+
+            return $"BE{controlKey:D2}{baseNumber:D10}";
         }
     }
 }

@@ -11,19 +11,16 @@
     <div class="form-group">
         <label for="firstName">First Name:
             <InputText id="firstName" class="form-control" @bind-Value="newCustomer!.FirstName" />
-            <ValidationMessage For="@(()=>newCustomer.FirstName)" />
         </label>
     </div>
     <div class="form-group">
         <label for="lastName">Last Name:
             <InputText id="lastName" class="form-control" @bind-Value="newCustomer!.LastName" />
-            <ValidationMessage For="@(()=>newCustomer.LastName)" />
         </label>
     </div>
     <div class="form-group">
         <label for="birthDate">Birth Date:
             <InputDate id="birthDate" class="form-control" @bind-Value="newCustomer!.BirthDate" />
-            <ValidationMessage For="@(()=>newCustomer.BirthDate)" />
         </label>
     </div>  
     <button style="margin-top: 10px;" type="submit" class="btn btn-primary">Create Customer</button>
