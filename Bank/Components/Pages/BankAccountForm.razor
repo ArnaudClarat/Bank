@@ -1,15 +1,16 @@
 ﻿@page "/create-account"
+@rendermode InteractiveServer
 @using Bank.Components.Models
 
 <h3>Create a new bank account</h3>
 
-<EditForm Model="@this" OnValidSubmit="HandleAccountCreation" FormName="newAccountForm">
+<EditForm Model="@this" OnValidSubmit="HandleAccountCreation">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div class="form-group">
         <label for="accountType">Account Type:</label>
-        <InputSelect id="accountType" class="form-control" @bind-Value="selectedAccountType">
+        <InputSelect id="accountType" class="form-control" @bind-Value="SelectedAccountType">
             <option value="">Select an account type</option>
             <option value="Savings">Savings Account</option>
             <option value="Current">Current Account</option>
@@ -19,7 +20,7 @@
         <label for="accountNumber">Account Number:</label>
         <InputText id="accountNumber" class="form-control" @bind-Value="Number"/>
     </div>
-    @if (selectedAccountType == "Current")
+    @if (SelectedAccountType == "Current")
     {
         <div class="form-group">
             <label for="creditLine">Credit Line:</label>
@@ -29,7 +30,7 @@
     <div class="form-group">
         <label for="owner">
             Owner:
-            <InputSelect id="owner" class="form-control" @bind-Value="selectedCustomer">
+            <InputSelect id="owner" class="form-control" @bind-Value="SelectedCustomer">
                 <option value="">Select a customer</option>
                 @foreach (var customer in Customers)
                 {
@@ -38,7 +39,6 @@
             </InputSelect>
         </label>
     </div>
-    <p>selectedAccountType : @selectedAccountType</p>
 
     <button style="margin-top: 10px;" type="submit" class="btn btn-primary">Create Account</button>
 </EditForm>
@@ -46,11 +46,10 @@
 <a href="/" style="margin-top: 10px;" class="btn btn-secondary">Back to List</a>
 
 @code {
-    private string selectedAccountType { get; set; }
-    private string selectedCustomer { get; set; }
-    private string Number { get; set; }
+    private string? SelectedAccountType { get; set; }
+    private string? SelectedCustomer { get; set; }
+    private string? Number { get; set; }
     private double CreditLine { get; set; }
-    private BankAccount? newAccount = new SavingsAccount("", new Person("", "", DateTime.Now));
 
     [Inject]
     private BankStateService BankStateService { get; set; }
@@ -61,26 +60,29 @@
         var state = await BankStateService.LoadStateAsync();
         Customers = state.Customers;
     }
+
     private async Task HandleAccountCreation()
     {
-        var state = await BankStateService.LoadStateAsync();
-        Person customer = Customers.FirstOrDefault(c => $"{c.FirstName} {c.LastName}" == selectedCustomer);
-        if (newAccount != null)
+        try
         {
-            // Creating a new account based on selected type
-            if (selectedAccountType == "Savings")
+            var state = await BankStateService.LoadStateAsync();
+            Person customer = Customers.FirstOrDefault(c => $"{c.FullName}" == SelectedCustomer);
+
+            BankAccount newAccount = SelectedAccountType switch
             {
-                newAccount = new SavingsAccount(newAccount.Number, customer);
-            }
-            else
-            {
-                newAccount = new CurrentAccount(newAccount.Number, customer, 0, newAccount.CreditLine);
-            }
+                "Savings" => new SavingsAccount(Number, customer),
+                "Current" => new CurrentAccount(Number, customer, 0, CreditLine),
+                _ => throw new ArgumentException("Invalid account type")
+            };
 
             state.Accounts.Add(newAccount);
             await BankStateService.SaveStateAsync(state);
 
             newAccount = new SavingsAccount("", new Person("", "", DateTime.Now)); // Réinitialiser le formulaire
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
         }
     }
 }
